@@ -19,7 +19,7 @@ The project is built from scratch using **PyTorch PPO**, **Unity ML-Agents Low-L
 # Architecture
 
 <p align="center">
-<img src="Docs/architecture/overall_pipeline.png" width="1200">
+<img src="Docs/architecture/overall_pipeline.png" width="1600">
 </p>
 
 The training pipeline consists of:
