@@ -79,7 +79,7 @@ The Mage receives the opposite objective.
 
 | Condition | Reward |
 |-----------|-------:|
-| Distance ≥ 4.0 | +0.0005 every step |
+| Distance ≥ 3.5 | +0.0005 every step |
 | Distance ≤ 2.0 | -0.0002 every step |
 
 The Mage therefore learns to maximize spacing while searching for opportunities to cast high-damage ranged skills.
