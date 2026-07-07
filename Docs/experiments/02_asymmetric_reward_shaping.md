@@ -1,10 +1,9 @@
-02_asymmetric_reward_shaping
-
+# Experiment 02 - Asymmetric Reward Shaping
 **Date:** 2026-07-07
 
 ---
 
-# Goal
+## Goal
 
 Improve combat behavior through **reward engineering** rather than simple skill balancing.
 
