@@ -427,7 +427,6 @@ The ultimate objective is to build an AI-assisted balance recommendation system 
 Experiment 03 provided several important insights.
 
 - Small action costs effectively reduce inefficient skill spamming.
-- Curriculum learning successfully teaches rare defensive behaviors.
 - Richer observations improve policy quality without increasing network complexity.
 - Hazard telegraph information is more informative than hazard position alone.
 - PPO remains stable under increasingly complex reward functions when supported by appropriate optimization techniques.
