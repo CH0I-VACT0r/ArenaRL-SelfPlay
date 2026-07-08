@@ -191,7 +191,7 @@ No further optimizer modifications were required.
 
 # TensorBoard Analysis
 
-![Tensorboard graph](graph/exp03_tensorboard.png)
+![Tensorboard graph](Docs/graph/exp03_tensorboard.png)
 
 ## Actor Loss
 
