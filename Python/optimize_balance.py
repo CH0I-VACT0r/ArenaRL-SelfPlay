@@ -2,8 +2,10 @@ import optuna
 import torch
 import numpy as np
 import os
+from torch.distributions import Categorical
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.environment_parameters_channel import EnvironmentParametersChannel
+from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
 from mlagents_envs.base_env import ActionTuple
 
 # 모델 임포트
@@ -12,10 +14,15 @@ from model import ArenaPPOModel
 # 하이퍼파라미터
 EPISODES_PER_TRIAL = 30
 TIMEOUT_STEP_LIMIT = 3000
-MODEL_PATH = "ArenaPPO_Ep1000.pt"
+MODEL_PATH = "ArenaPPO_Ep1400.pt"
 
 # 연산 장치 설정
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+env_channel = EnvironmentParametersChannel()
+engine_channel = EngineConfigurationChannel()
+engine_channel.set_configuration_parameters(time_scale=10.0)
+global_env = None
 
 # 평가용 PyTorch 모델 로드
 def load_model():
@@ -27,7 +34,7 @@ def load_model():
     model.eval() # 추론 모드 전환 (그래디언트 연산 비활성화)
     return model
 
-def objective(trial, model):
+def objective(trial, model, env):
     # Optuna 밸런스 탐색 공간 설정 (5단위, 0.05단위 제약)
     warrior_hp = trial.suggest_int("warrior_hp", 150, 300, step=5)
     mage_hp = trial.suggest_int("mage_hp", 100, 250, step=5)
@@ -35,18 +42,15 @@ def objective(trial, model):
     mage_dmg = trial.suggest_float("mage_dmg_mult", 0.5, 1.5, step=0.05)
 
     # 유니티로 파라미터 전송
-    env_channel = EnvironmentParametersChannel()
-    env_channel.set_float_parameter("warrior_hp", float(warrior_hp))
-    env_channel.set_float_parameter("mage_hp", float(mage_hp))
+    env_channel.set_float_parameter("warrior_max_hp", float(warrior_hp))
+    env_channel.set_float_parameter("mage_max_hp", float(mage_hp))
     env_channel.set_float_parameter("warrior_dmg_mult", float(warrior_dmg))
     env_channel.set_float_parameter("mage_dmg_mult", float(mage_dmg))
 
-    env = UnityEnvironment(file_name=None, side_channels=[env_channel])
     env.reset()
     
     behavior_names = list(env.behavior_specs.keys())
     if not behavior_names:
-        env.close()
         return 999.0 # 에러 시 높은 Loss 반환
 
     behavior_name = behavior_names[0]
@@ -66,16 +70,15 @@ def objective(trial, model):
             
             # --- 행동(Action) 추론 ---
             if len(decision_steps) > 0:
-                # train.py와 동일하게 obs[1]에서 30차원 데이터 추출
                 obs = torch.tensor(decision_steps.obs[1], dtype=torch.float32, device=device)
                 
                 with torch.no_grad():
-                    # forward를 호출하여 로짓(Logits) 획득
                     move_logits, skill_logits, _ = model.forward(obs)
+                    move_dist = Categorical(logits=move_logits)
+                    skill_dist = Categorical(logits=skill_logits)
                     
-                    # 확률 분포 샘플링 대신 가장 높은 값(Argmax) 선택
-                    move_action = torch.argmax(move_logits, dim=-1).cpu().numpy()
-                    skill_action = torch.argmax(skill_logits, dim=-1).cpu().numpy()
+                    move_action = move_dist.sample().cpu().numpy()
+                    skill_action = skill_dist.sample().cpu().numpy()
                     
                 actions_np = np.column_stack((move_action, skill_action))
                 action_tuple = ActionTuple(discrete=actions_np)
@@ -92,8 +95,6 @@ def objective(trial, model):
                 is_done = True
                 for agent_id in next_terminal_steps.agent_id:
                     reward = next_terminal_steps[agent_id].reward
-                    # 보상이 양수(승리)인 에이전트의 직업 판별 (0: 전사, 1: 마법사)
-                    # 종료된 에이전트의 마지막 관측값(obs[1])의 첫 번째 인덱스(classId) 확인
                     class_id = int(next_terminal_steps[agent_id].obs[1][0])
                     
                     if reward > 0:
@@ -109,7 +110,7 @@ def objective(trial, model):
                 is_done = True
                 break
 
-    env.close()
+    # [수정됨] env.close() 삭제 완료
 
     # 목적 함수 계산 (Loss)
     warrior_win_rate = warrior_wins / EPISODES_PER_TRIAL
@@ -127,17 +128,26 @@ def objective(trial, model):
 if __name__ == "__main__":
     print("밸런싱 최적화 시뮬레이션을 준비합니다...")
     eval_model = load_model()
-    print("모델 로드 완료. 유니티 에디터에서 Play 버튼을 대기합니다.")
+    
+    # [수정됨] 전역 환경(Global Environment) 단 한 번 초기화
+    print("유니티 에디터에서 Play 버튼을 대기합니다.")
+    global_env = UnityEnvironment(file_name=None, side_channels=[env_channel, engine_channel])
 
-    # 람다(lambda)를 사용하여 model 인자를 objective 함수로 전달
-    study = optuna.create_study(direction="minimize")
-    study.optimize(lambda trial: objective(trial, eval_model), n_trials=50)
+    study = optuna.create_study(
+        study_name="arena_balance_study",
+        storage="sqlite:///arena_balance.db",
+        load_if_exists=True,
+        direction="minimize"
+    )
+    
+    # 람다 함수에서 global_env 매개변수를 정상적으로 넘겨줌
+    study.optimize(lambda trial: objective(trial, eval_model, global_env), n_trials=50)
 
+    # 모든 트라이얼이 종료된 후 마지막에 한 번만 닫기
+    if global_env is not None:
+        global_env.close()
+        
     print("\n" + "="*50)
     print("최적의 황금 밸런스 파라미터 도출 완료:")
-    for key, value in study.best_params.items():
-        if "dmg" in key:
-            print(f" - {key}: {value:.2f}")
-        else:
-            print(f" - {key}: {value}")
+    print(f"최적의 밸런스 값: {study.best_params}")
     print("="*50)
