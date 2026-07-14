@@ -133,12 +133,8 @@ Development is organized as a series of research experiments.
 | 01 | [Initial Self-Play Training](Docs/experiments/01_initial_selfplay.md) | Complete |
 | 02 | [Asymmetric Reward Functions](Docs/experiments/02_asymmetric_reward_shaping.md) | Complete |
 | 03 | [Reward Refinement](Docs/experiments/03_reward_refinement.md) | Complete |
-| 04 | [Behavior Refinement](Docs/experiments/04_behavior_refinement.md) | In Progress |
-| 05 | [Balancing Model] | In Progress |
-
-
-Detailed change history is available in:
-➡️ [CHANGELOG.md](Docs/changelog/CHANGELOG.md)
+| 04 | [Behavior Refinement](Docs/experiments/04_behavior_refinement.md) | Complete |
+| 05 | [Behavior Refinement](Docs/experiments/05_balance_optimization.md) | Complete |
 
 ---
 
