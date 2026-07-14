@@ -33,11 +33,28 @@ public class Skill_BasicAttack : SkillBase
         Vector2 dir = caster.GetFacingDirection();
         Vector2 castPos = caster.transform.position;
 
+        // 조건부 자동 조준 로직
+        if (caster.enemyTransform != null)
+        {
+            Vector2 dirToEnemy = caster.enemyTransform.position - caster.transform.position;
+            float distanceToEnemy = dirToEnemy.magnitude;
+            dirToEnemy.Normalize();
+
+            // 적이 사거리보다 살짝 여유 있는 범위(2.5f) 내에 있고,
+            // 대략적으로 적 방향(60도 이내)을 바라보고 스킬을 시전했다면,
+            // 타격 방향을 적에게 고정
+            if (distanceToEnemy <= 2.5f && Vector2.Angle(dir, dirToEnemy) <= 60f)
+            {
+                dir = dirToEnemy;
+            }
+        }
+
         // 시각적 피드백
         caster.Visualizer.DrawCone(castPos, dir, attackRadius, attackAngle, 0.2f, new Color(1f, 0f, 0f, 0.4f));
 
         // 타격 판정 로직
         Collider2D[] hits = Physics2D.OverlapCircleAll(castPos, attackRadius, LayerMask.GetMask("Agent"));
+        bool hitSuccess = false;
 
         foreach (Collider2D hit in hits)
         {
@@ -49,6 +66,7 @@ public class Skill_BasicAttack : SkillBase
                 if (dirToClosest.sqrMagnitude <= 0.001f)
                 {
                     ApplyDamage(hit, caster);
+                    hitSuccess = true;
                     continue;
                 }
 
@@ -58,9 +76,17 @@ public class Skill_BasicAttack : SkillBase
                 if (angleToClosest <= attackAngle / 2f)
                 {
                     ApplyDamage(hit, caster);
+                    hitSuccess = true;
                 }
             }
         }
+
+        if (!hitSuccess)
+        {
+            // 타격에 실패했을 경우, 스킬 시전 비용 외에 추가적인 정확도 패널티 부여
+            caster.AddReward(-0.01f);
+        }
+
         CurrentCooldown = MaxCooldown;
     }
 
@@ -149,6 +175,8 @@ public class Skill_ChargeCC : SkillBase
         caster.Visualizer.DrawCircle(attackPos, radius, 0.2f, new Color(0f, 0f, 1f, 0.4f));
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPos, radius, LayerMask.GetMask("Agent"));
+        bool hitSuccess = false;
+
         foreach (var hit in hits)
         {
             if (hit.gameObject != caster.gameObject)
@@ -159,8 +187,15 @@ public class Skill_ChargeCC : SkillBase
                     target.TakeDamage(30f, caster);
                     target.ApplyStun(1.0f);
                     if (TelemetryManager.Instance != null) TelemetryManager.Instance.RecordSkillHit(caster.classId, SkillId, 30f, true);
+
+                    hitSuccess = true;
                 }
             }
+        }
+        if (!hitSuccess)
+        {
+            // 타격에 실패했을 경우, 약간의 추가 패널티 부여
+            caster.AddReward(-0.01f);
         }
     }
 }

@@ -36,7 +36,7 @@ public class ArenaAgent : Agent
 
     [HideInInspector] public bool isDangerActive;
     [HideInInspector] public Vector2 activeDangerCenter;
-
+    [HideInInspector] public bool hasClaimedEarlyReward = false;
     public ISkillVisualizer Visualizer { get; private set; }
     public AgentUI agentUI;
 
@@ -173,6 +173,7 @@ public class ArenaAgent : Agent
         isCcImmune = false;
         isCharging = false;
         isDangerActive = false;
+        hasClaimedEarlyReward = false;
         stunTimer = 0f; buffTimer = 0f; chargeTimer = 0f;
 
         skillManager.Initialize(this, initialSkillIds);
@@ -467,6 +468,13 @@ public class ArenaAgent : Agent
                     attackReward += 0.2f; // 연속 타격 성공 가산점
                 }
                 attacker.lastDamageDealtTime = Time.time;
+
+                // 초반 진입 일회성 가산점
+                if (attacker.StepCount <= 500 && !attacker.hasClaimedEarlyReward)
+                {
+                    attackReward += 0.1f; // 강력한 첫 타격 보상 지급
+                    attacker.hasClaimedEarlyReward = true;
+                }
             }
             // 마법사의 근접 방어 커리큘럼 보상
             else if (attacker.classId == 1)

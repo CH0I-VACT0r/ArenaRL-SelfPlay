@@ -131,6 +131,23 @@ public class TelemetryManager : MonoBehaviour
     {
         if (combatStats.Count == 0) return;
 
+        bool isGhostEpisode = false;
+        foreach (var classData in combatStats)
+        {
+            if (classData.Value.survivalTime < 0.5f)
+            {
+                isGhostEpisode = true;
+                break;
+            }
+        }
+
+        if (isGhostEpisode)
+        {
+            combatStats.Clear();
+            skillStats.Clear();
+            return;
+        }
+
         currentEpisode++;
         csvBuilder.Clear();
 

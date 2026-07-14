@@ -13,7 +13,7 @@ public class ArenaEnvironment : MonoBehaviour
     private float gameTimer = 0f;
     private float dotDamageTimer = 0f;
     private const float SUDDEN_DEATH_START_TIME = 40f; // 40초 이후 활성화
-    private const float DOT_DAMAGE_INTERVAL = 1.0f;    // 1초 주기
+    private const float DOT_DAMAGE_INTERVAL = 0.5f;    // 0.5초 주기
     private const float DAMAGE_PERCENT = 0.05f;       // 최대 체력의 5%
     private bool isEpisodeActive = false;
 
@@ -116,42 +116,56 @@ public class ArenaEnvironment : MonoBehaviour
         mageAgent.TakeDamage(mageDot, null);
 
         // 동일 프레임 내 동시 사망 여부 정밀 검사
-        if (warriorAgent.currentHp <= 0 && mageAgent.currentHp <= 0)
+        if (warriorAgent.currentHp <= 0 || mageAgent.currentHp <= 0)
         {
             isEpisodeActive = false;
-            ResolveSimultaneousDeath(warriorPreHp, magePreHp);
+            ResolveSuddenDeath(warriorPreHp, magePreHp);
         }
     }
 
-    private void ResolveSimultaneousDeath(float warriorHp, float mageHp)
+    private void ResolveSuddenDeath(float warriorPreHp, float magePreHp)
     {
-        // 직전 프레임 체력 비교를 통한 판정승 처리
-        if (warriorHp > mageHp)
+        float warriorHpRatio = warriorPreHp / warriorAgent.maxHp;
+        float mageHpRatio = magePreHp / mageAgent.maxHp;
+
+        // 도트딜을 맞기 직전 프레임에 HP가 더 많았던 쪽이 승리
+        if (warriorHpRatio > mageHpRatio)
         {
-            // 전사 판정승
             warriorAgent.AddReward(1.0f);
             mageAgent.AddReward(-1.0f);
+
+            if (TelemetryManager.Instance != null)
+            {
+                TelemetryManager.Instance.RecordResult(0, true);  // 전사 승리 기록
+                TelemetryManager.Instance.RecordResult(1, false); // 마법사 패배 기록
+            }
         }
-        else if (mageHp > warriorHp)
+        else if (mageHpRatio > warriorHpRatio)
         {
-            // 마법사 판정승
-            mageAgent.AddReward(1.0f);
             warriorAgent.AddReward(-1.0f);
+            mageAgent.AddReward(1.0f);
+
+            if (TelemetryManager.Instance != null)
+            {
+                TelemetryManager.Instance.RecordResult(0, false); // 전사 패배 기록
+                TelemetryManager.Instance.RecordResult(1, true);  // 마법사 승리 기록
+            }
         }
         else
         {
-            // 이론상 완벽히 일치할 경우 (진짜 무승부) 페널티 없이 종료
-            warriorAgent.AddReward(0.0f);
-            mageAgent.AddReward(0.0f);
+            // 동률일 경우 둘 다 패배(-1.0f) 처리
+            warriorAgent.AddReward(-1.0f);
+            mageAgent.AddReward(-1.0f);
+
+            if (TelemetryManager.Instance != null)
+            {
+                // 텔레메트리 상으로도 양측 모두 패배로 기록하여 승률 산정에서 제외
+                TelemetryManager.Instance.RecordResult(0, false);
+                TelemetryManager.Instance.RecordResult(1, false);
+            }
         }
 
-        // Telemetry 기록 처리
-        if (TelemetryManager.Instance != null)
-        {
-            TelemetryManager.Instance.RecordResult(0, warriorHp > mageHp);
-            TelemetryManager.Instance.RecordResult(1, mageHp > warriorHp);
-        }
-
+        // 즉시 에피소드를 종료하여 좀비 상태로 60초까지 끌려가는 것을 방지합니다.
         warriorAgent.EndEpisode();
         mageAgent.EndEpisode();
     }
