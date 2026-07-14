@@ -173,7 +173,7 @@ This refinement discourages unnecessary attack spamming and promotes more delibe
 
 # Analysis
 
-![TensorBoard](graph/exp04_tensorboard.png)
+![Tensorboard graph](../graph/exp04_tensorboard.png)
 
 
 ## 1. Skill Efficiency Improvement
