@@ -1,6 +1,6 @@
 # ArenaRL-SelfPlay
 
-**Self-Play Reinforcement Learning Arena built with Unity and PyTorch**
+**AI-assisted Game Balancing Framework using Self-Play Reinforcement Learning**
 
 Warrior and Mage agents learn competitive PvP combat through a custom PPO implementation, self-play training, and telemetry-driven analysis.
 
@@ -124,6 +124,16 @@ Telemetry data is later analyzed to guide reward tuning and game balancing.
 
 ---
 
+## Automated Balance Optimization
+
+The trained PPO agents are also used as automated playtesters.
+
+By integrating Optuna with Unity Environment Parameters, gameplay statistics such as HP and damage multipliers are automatically optimized through repeated self-play simulations.
+
+This enables AI-assisted game balancing without manual parameter tuning.
+
+---
+
 # Experiment Log
 
 Development is organized as a series of research experiments.
@@ -138,30 +148,43 @@ Development is organized as a series of research experiments.
 
 ---
 
-# Roadmap
+# Results
 
-- Unity Arena Environment
-- PyTorch PPO
-- Self-Play
-- Telemetry Logging
-- Experiment Tracking
+| Metric | Result |
+|---------|---------:|
+| PPO Training | ✅ Stable |
+| Self-Play | ✅ Warrior vs Mage |
+| Observation Size | 30 |
+| Action Space | Multi-Discrete (9 × 5) |
+| Telemetry Metrics | 10+ |
+| Reward Iterations | 4 |
+| Balance Optimization | Optuna |
+| Best Balance | 50% vs 50% Win Rate |
 
-Next Goals
-
-- Asymmetric Reward Functions
-- ELO League Training
-- Population-Based Self-Play
-- Automatic Balance Recommendation
 ---
 
-# Technologies
-- Unity
-- C#
-- PyTorch
-- Python
-- PPO
-- Reinforcement Learning
-- Self-Play
-- Telemetry Analysis
+# Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Engine | Unity 2022 |
+| Language | C#, Python |
+| RL Framework | PyTorch |
+| Algorithm | PPO (Custom Implementation) |
+| Communication | Unity ML-Agents Low-Level API |
+| Optimization | Optuna |
+| Data Analysis | TensorBoard |
+| Version Control | Git |
+
+---
+
+# Key Contributions
+
+- Implemented a custom PPO framework using PyTorch.
+- Designed a multi-discrete action space for simultaneous movement and skill execution.
+- Developed asymmetric reward functions for heterogeneous agents.
+- Built a telemetry pipeline for automated gameplay analysis.
+- Integrated Optuna to automatically optimize gameplay balance through self-play.
+- Demonstrated AI-assisted game balancing without manual parameter tuning.
 
 ---
