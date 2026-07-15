@@ -32,6 +32,69 @@ The training pipeline consists of:
 - Future Balance Recommendation System
 
 ---
+# Game System
+
+The self-play environment is designed to resemble a lightweight action RPG combat system rather than a simple reinforcement learning benchmark.
+
+## Play Rules
+
+- 1 vs 1 Arena
+- Warrior vs Mage
+- Maximum Episode Length: 60 seconds
+- Sudden Death after 40 seconds
+- Simultaneous Action Execution
+
+---
+
+## Warrior
+
+Designed as an aggressive melee fighter.
+
+Skills
+
+1. Basic Attack
+2. Dash
+3. Charge Slash
+4. Chain Pull (Crowd Control)
+
+Characteristics
+
+- High close-range pressure
+- Combo-oriented gameplay
+- Pull-and-finish combat style
+
+---
+
+## Mage
+
+Designed as a ranged control specialist.
+
+Skills
+
+1. Basic Attack
+2. Dash
+3. AoE Stun
+4. Meteor
+
+Characteristics
+
+- Long-range kiting
+- Defensive repositioning
+- Area control
+
+---
+
+## Combat Mechanics
+
+- Skill Cooldown
+- Charge Skills
+- Crowd Control
+- Projectile System
+- Hazard Telegraph
+- Magnetic Field (Sudden Death)
+- Continuous Damage Zone
+
+---
 
 # Action Space
 
@@ -62,6 +125,40 @@ The agent outputs **two discrete actions every frame**.
 - Skill 4
 
 This Multi-Discrete action space enables simultaneous movement and skill execution.
+
+---
+
+# Observation Space
+
+Each agent observes a 30-dimensional state vector.
+
+The observation includes
+
+- Self Status
+- Enemy Status
+- Relative Distance
+- Relative Velocity
+- Cooldown State
+- Crowd Control State
+- Hazard Position
+- Hazard Velocity
+- Telegraph Information
+
+---
+# Reward Design
+
+The reward function evolved throughout multiple experiments.
+
+Major reward components include
+
+- Damage Reward
+- Combo Reward
+- Distance Reward
+- Aim Alignment Reward
+- Action Cost
+- Whiff Penalty
+- Hazard Avoidance Reward
+- Curriculum Reward
 
 ---
 
@@ -130,7 +227,19 @@ The trained PPO agents are also used as automated playtesters.
 
 By integrating Optuna with Unity Environment Parameters, gameplay statistics such as HP and damage multipliers are automatically optimized through repeated self-play simulations.
 
-This enables AI-assisted game balancing without manual parameter tuning.
+### Optimization Variables
+
+- Warrior HP
+- Mage HP
+- Warrior Damage Multiplier
+- Mage Damage Multiplier
+
+### Objective
+Loss = |Warrior Win Rate − Mage Win Rate| + 0.5 × Timeout Rate
+
+The PPO agents act as automated playtesters,
+
+allowing hundreds of balance candidates to be evaluated without human intervention.
 
 ---
 
@@ -175,6 +284,25 @@ Development is organized as a series of research experiments.
 | Optimization | Optuna |
 | Data Analysis | TensorBoard |
 | Version Control | Git |
+
+---
+
+# Design Philosophy
+
+Instead of designing stronger AI,
+
+this project focuses on designing better gameplay through AI.
+
+Self-play agents are treated as automated playtesters.
+
+Telemetry generated from thousands of simulated matches is analyzed to
+
+- improve reward functions,
+- discover undesirable behaviors,
+- evaluate game balance,
+- recommend parameter adjustments.
+
+The long-term objective is an AI-assisted game balancing framework for live-service games.
 
 ---
 
