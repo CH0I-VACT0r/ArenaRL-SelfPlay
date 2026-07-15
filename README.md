@@ -158,7 +158,6 @@ Major reward components include
 - Action Cost
 - Whiff Penalty
 - Hazard Avoidance Reward
-- Curriculum Reward
 
 ---
 
@@ -235,6 +234,7 @@ By integrating Optuna with Unity Environment Parameters, gameplay statistics suc
 - Mage Damage Multiplier
 
 ### Objective
+
 Loss = |Warrior Win Rate − Mage Win Rate| + 0.5 × Timeout Rate
 
 The PPO agents act as automated playtesters,
@@ -261,8 +261,8 @@ Development is organized as a series of research experiments.
 
 | Metric | Result |
 |---------|---------:|
-| PPO Training | ✅ Stable |
-| Self-Play | ✅ Warrior vs Mage |
+| PPO Training | Stable |
+| Self-Play | Warrior vs Mage |
 | Observation Size | 30 |
 | Action Space | Multi-Discrete (9 × 5) |
 | Telemetry Metrics | 10+ |
