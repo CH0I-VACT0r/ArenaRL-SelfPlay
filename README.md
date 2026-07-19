@@ -254,6 +254,7 @@ Development is organized as a series of research experiments.
 | 03 | [Reward Refinement](Docs/experiments/03_reward_refinement.md) | Complete |
 | 04 | [Behavior Refinement](Docs/experiments/04_behavior_refinement.md) | Complete |
 | 05 | [Balance Optimization](Docs/experiments/05_balance_optimization.md) | Complete |
+| 06 | [Multi Objecitve Optimization](Docs/experiments/06_multi_objective_optimization.md) | Complete |
 
 ---
 
