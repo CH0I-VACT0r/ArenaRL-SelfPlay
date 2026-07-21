@@ -1,6 +1,6 @@
 # ArenaRL-SelfPlay
 
-**AI-assisted Game Balancing Framework using Self-Play Reinforcement Learning**
+**ArenaRL-SelfPlay: A Telemetry-Driven Game Balance Optimization Framework using Self-Play Reinforcement Learning**
 
 Warrior and Mage agents learn competitive PvP combat through a custom PPO implementation, self-play training, and telemetry-driven analysis.
 
@@ -8,11 +8,32 @@ Warrior and Mage agents learn competitive PvP combat through a custom PPO implem
 
 # Project Overview
 
-This project explores how reinforcement learning can be applied to competitive PvP combat in RPG games.
+This project investigates how reinforcement learning can be applied not only to train competitive game AI, but also to automatically optimize gameplay balance.
 
-Unlike traditional scripted AI, two heterogeneous agents (Warrior and Mage) continuously improve by fighting against each other in a Unity arena using Self-Play.
+Instead of relying solely on designer intuition, self-play agents are used as automated playtesters while telemetry-driven multi-objective optimization searches for balanced gameplay configurations.
 
-The project is built from scratch using **PyTorch PPO**, **Unity ML-Agents Low-Level API**, and a custom telemetry pipeline for gameplay analysis.
+The framework combines:
+
+- Custom PPO
+- Self-Play Reinforcement Learning
+- Gameplay Telemetry
+- Optuna Multi-Objective Optimization
+- Domain Randomization
+
+The project is organized as a sequence of iterative experiments, where each stage incrementally improves the reinforcement learning framework, gameplay telemetry, and automated balance optimization pipeline.
+
+---
+
+# Highlights
+
+- Custom PPO implementation in PyTorch
+- Unity ML-Agents Low-Level API
+- Self-Play PvP Arena
+- Telemetry Side Channel
+- Domain Randomization
+- Multi-objective Balance Optimization
+- 8-Dimensional Parameter Search
+- Automated Gameplay Analysis
 
 ---
 
@@ -29,7 +50,7 @@ The training pipeline consists of:
 - PyTorch PPO Training
 - Telemetry Collection
 - Gameplay Analysis
-- Future Balance Recommendation System
+- Telemetry-driven Balance Optimization
 
 ---
 # Game System
@@ -130,7 +151,7 @@ This Multi-Discrete action space enables simultaneous movement and skill executi
 
 # Observation Space
 
-Each agent observes a 30-dimensional state vector.
+Each agent observes a 31-dimensional state vector.
 
 The observation includes
 
@@ -228,18 +249,24 @@ By integrating Optuna with Unity Environment Parameters, gameplay statistics suc
 
 ### Optimization Variables
 
-- Warrior HP
-- Mage HP
-- Warrior Damage Multiplier
-- Mage Damage Multiplier
+- HP
+- Damage
+- Movement Speed
+- Cooldown Multiplier
 
-### Objective
+### Optimization Objectives
 
-Loss = |Warrior Win Rate − Mage Win Rate| + 0.5 × Timeout Rate
+The optimization objective is defined as a weighted multi-objective loss:
 
-The PPO agents act as automated playtesters,
+Loss =
+0.35 × Win Rate Gap
++ 0.20 × Survival Penalty
++ 0.15 × Timeout Penalty
++ 0.10 × Hit Rate Penalty
++ 0.10 × Distance Penalty
++ 0.10 × DPS Penalty
 
-allowing hundreds of balance candidates to be evaluated without human intervention.
+The optimizer minimizes a weighted multi-objective loss constructed from gameplay telemetry collected during self-play.
 
 ---
 
@@ -264,14 +291,16 @@ Development is organized as a series of research experiments.
 
 | Metric | Result |
 |---------|---------:|
-| PPO Training | Stable |
-| Self-Play | Warrior vs Mage |
-| Observation Size | 30 |
+| PPO Training Episodes | 7000 |
+| Self-Play Matches | 10,000+ |
+| Observation Size | 31 |
 | Action Space | Multi-Discrete (9 × 5) |
 | Telemetry Metrics | 10+ |
-| Reward Iterations | 4 |
-| Balance Optimization | Optuna |
-| Best Balance | 50% vs 50% Win Rate |
+| Balance Parameters | 8 |
+| Optimization Method | Optuna |
+| Best Win Rate Gap | 0.00 |
+| Lowest Integrated Loss | 0.1668 |
+| Best Balance | 50 : 50 Win Rate |
 
 ---
 
@@ -307,15 +336,33 @@ Telemetry generated from thousands of simulated matches is analyzed to
 
 The long-term objective is an AI-assisted game balancing framework for live-service games.
 
+Rather than treating balance as a collection of handcrafted parameters, this project formulates game balancing as an optimization problem driven by gameplay telemetry.
+
+The framework explores how reinforcement learning can assist designers by automatically searching for parameter configurations while revealing unintended emergent strategies.
+
+Ultimately, the goal is not to replace human designers, but to provide quantitative evidence that supports balance decisions through large-scale automated gameplay simulation.
+
 ---
 
 # Key Contributions
 
-- Implemented a custom PPO framework using PyTorch.
-- Designed a multi-discrete action space for simultaneous movement and skill execution.
-- Developed asymmetric reward functions for heterogeneous agents.
-- Built a telemetry pipeline for automated gameplay analysis.
-- Integrated Optuna to automatically optimize gameplay balance through self-play.
-- Demonstrated AI-assisted game balancing without manual parameter tuning.
-
+- Implemented a custom PPO framework for asymmetric PvP self-play.
+- Designed a telemetry-driven gameplay analysis pipeline using Unity Side Channels.
+- Developed a multi-objective balance optimization framework using Optuna.
+- Expanded the optimization space from four to eight gameplay parameters.
+- Investigated the relationship between optimization objectives and emergent gameplay.
+- Demonstrated that increasing optimization dimensionality alone does not necessarily alter emergent combat behavior.
+- Showed how reward weighting influences balance outcomes through telemetry-guided analysis.
+- Demonstrated how telemetry can be integrated into reinforcement learning-based game balance optimization through Unity ML-Agents Side Channels.
+  
 ---
+
+# Research Findings
+
+Throughout eight iterative experiments, several observations emerged.
+
+- Reward shaping significantly influences combat behavior.
+- Multi-objective optimization produces more realistic gameplay than win-rate optimization alone.
+- Expanding the optimization search space improves flexibility but does not necessarily change emergent strategies.
+- Agents repeatedly converged toward kite-oriented combat, suggesting that environment dynamics dominated parameter optimization.
+- Effective AI-assisted game balancing requires not only parameter optimization but also careful design of reward functions and combat environments.
