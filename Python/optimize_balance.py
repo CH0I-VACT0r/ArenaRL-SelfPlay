@@ -42,7 +42,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 env_channel = EnvironmentParametersChannel()
 engine_channel = EngineConfigurationChannel()
-engine_channel.set_configuration_parameters(time_scale=10.0)
+engine_channel.set_configuration_parameters(time_scale=20.0)
 global_env = None
 
 # 평가용 PyTorch 모델 로드
@@ -56,17 +56,28 @@ def load_model():
     return model
 
 def objective(trial, model, env):
-    # Optuna 밸런스 탐색 공간 설정 (5단위, 0.05단위 제약)
-    warrior_hp = trial.suggest_int("warrior_hp", 150, 300, step=5)
-    mage_hp = trial.suggest_int("mage_hp", 100, 250, step=5)
+    # 기존 체력 및 대미지 탐색 공간
+    warrior_hp = trial.suggest_int("warrior_hp", 200, 300, step=5)
+    mage_hp = trial.suggest_int("mage_hp", 150, 250, step=5)
     warrior_dmg = trial.suggest_float("warrior_dmg_mult", 0.5, 1.5, step=0.05)
     mage_dmg = trial.suggest_float("mage_dmg_mult", 0.5, 1.5, step=0.05)
+
+    # 이동 속도 및 쿨타임 탐색 공간 (-20% ~ +20% 범위, 0.05 단위)
+    warrior_speed = trial.suggest_float("warrior_speed", 0.8, 1.2, step=0.05)
+    mage_speed = trial.suggest_float("mage_speed", 0.8, 1.2, step=0.05)
+    warrior_cd = trial.suggest_float("warrior_cd", 0.8, 1.2, step=0.05)
+    mage_cd = trial.suggest_float("mage_cd", 0.8, 1.2, step=0.05)
 
     # 유니티로 파라미터 전송
     env_channel.set_float_parameter("warrior_max_hp", float(warrior_hp))
     env_channel.set_float_parameter("mage_max_hp", float(mage_hp))
     env_channel.set_float_parameter("warrior_dmg_mult", float(warrior_dmg))
     env_channel.set_float_parameter("mage_dmg_mult", float(mage_dmg))
+    
+    env_channel.set_float_parameter("warrior_speed", float(warrior_speed))
+    env_channel.set_float_parameter("mage_speed", float(mage_speed))
+    env_channel.set_float_parameter("warrior_cd", float(warrior_cd))
+    env_channel.set_float_parameter("mage_cd", float(mage_cd))
 
     env.reset()
     
@@ -182,7 +193,7 @@ if __name__ == "__main__":
     eval_model = load_model()
     
     # 전역 환경(Global Environment)
-    # [수정] side_channels 리스트에 telemetry_channel 추가
+    # side_channels 리스트에 telemetry_channel 추가
     print("유니티 에디터에서 Play 버튼을 대기합니다.")
     global_env = UnityEnvironment(
         file_name=None, 
@@ -190,14 +201,14 @@ if __name__ == "__main__":
     )
 
     study = optuna.create_study(
-        study_name="Arena_Balance_EP07",
+        study_name="Arena_Balance_EP07_V2",
         storage="sqlite:///arena_balance.db",
         load_if_exists=True,
         direction="minimize"
     )
     
     # 람다 함수에서 global_env 매개변수를 정상적으로 넘겨줌
-    study.optimize(lambda trial: objective(trial, eval_model, global_env), n_trials=50)
+    study.optimize(lambda trial: objective(trial, eval_model, global_env), n_trials=100)
 
     # 모든 트라이얼이 종료된 후 마지막에 한 번만 닫기
     if global_env is not None:
