@@ -1,5 +1,8 @@
 # EP07 — Telemetry-Driven Multi-Objective Balance Optimization
 
+**Date:** 2026-07-20
+
+---
 ## Objective
 
 EP06 optimized balance using only win rate and survival time.
