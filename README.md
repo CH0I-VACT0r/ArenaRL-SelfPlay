@@ -221,6 +221,7 @@ The animation above shows the first self-play training environment between Warri
 ---
 
 ## Telemetry System
+<img src="Docs/demo/telemetry.png" width="1600">
 
 The project automatically records gameplay statistics during training.
 
@@ -255,6 +256,7 @@ By integrating Optuna with Unity Environment Parameters, gameplay statistics suc
 - Cooldown Multiplier
 
 ### Optimization Objectives
+<img src="Docs/demo/optimize_balance.png" width="1600">
 
 The optimization objective is defined as a weighted multi-objective loss:
 
